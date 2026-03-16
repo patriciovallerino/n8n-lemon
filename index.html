@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafaf8;
+      color: #1a1a1a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e8e8e4;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px 24px;
+      border-bottom: 1px solid #e8e8e4;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-brand .logo {
+      width: 40px;
+      height: 40px;
+      background: #c8e64a;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-brand .logo svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .sidebar-brand .brand-text h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .sidebar-brand .brand-text span {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .sidebar-section {
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #999;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 8px 8px 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #444;
+      font-size: 14px;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover { background: #f5f5f0; }
+
+    .sidebar-link.active {
+      background: #e8f5a3;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .sidebar-link .icon { width: 18px; text-align: center; font-size: 14px; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid #e8e8e4;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      padding: 32px 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+    }
+
+    .header h1 { font-size: 24px; font-weight: 600; }
+    .header .subtitle { font-size: 14px; color: #888; margin-top: 2px; }
+
+    .btn-actualizar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-actualizar:hover { background: #f5f5f0; border-color: #ccc; }
+    .btn-actualizar.loading { opacity: 0.6; pointer-events: none; }
+
+    .btn-actualizar .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ddd;
+      border-top-color: #666;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .btn-actualizar.loading .spinner { display: inline-block; }
+    .btn-actualizar.loading .refresh-icon { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── KPI Cards ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .kpi-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .kpi-card .value {
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-card .detail { font-size: 13px; color: #999; }
+
+    .kpi-card .bar {
+      height: 3px;
+      border-radius: 2px;
+      margin-top: 12px;
+    }
+
+    .bar-green { background: #c8e64a; }
+    .bar-red { background: #e85d4a; }
+    .bar-orange { background: #f5a623; }
+    .bar-blue { background: #6bb8f0; }
+
+    /* ── Content Grid ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* ── Status Bar ── */
+    .status-bar {
+      display: flex;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 28px;
+      margin-bottom: 12px;
+    }
+
+    .status-bar .segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .segment-active { background: #c8e64a; color: #333; }
+    .segment-error { background: #e85d4a; }
+    .segment-inactive { background: #ddd; color: #888; }
+
+    .legend { display: flex; gap: 16px; margin-top: 12px; }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Integraciones ── */
+    .integration-list { list-style: none; }
+
+    .integration-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0ec;
+    }
+
+    .integration-item:last-child { border-bottom: none; }
+
+    .integration-name { font-size: 14px; font-weight: 500; }
+
+    .integration-bar {
+      flex: 1;
+      height: 4px;
+      background: #f0f0ec;
+      border-radius: 2px;
+      margin: 0 16px;
+    }
+
+    .integration-bar .fill {
+      height: 100%;
+      border-radius: 2px;
+      background: #c8e64a;
+      width: 100%;
+    }
+
+    .integration-check { font-size: 13px; color: #888; }
+
+    /* ── Alert List ── */
+    .alert-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid;
+    }
+
+    .alert-item.info { background: #f8f9f0; border-color: #c8e64a; }
+    .alert-item.warning { background: #fef8f0; border-color: #f5a623; }
+    .alert-item.error { background: #fef2f0; border-color: #e85d4a; }
+
+    .alert-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .alert-detail { font-size: 12px; color: #888; }
+
+    /* ── Steps ── */
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f0f0ec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      flex-shrink: 0;
+    }
+
+    .step-number.done { background: #c8e64a; color: #333; }
+
+    .step-label { font-size: 14px; font-weight: 500; }
+    .step-detail { font-size: 12px; color: #888; }
+
+    .badge {
+      margin-left: auto;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-green { background: #e8f5a3; color: #5a7a00; }
+    .badge-gray { background: #f0f0ec; color: #888; }
+    .badge-orange { background: #fef0d5; color: #a06800; }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Install Command ── */
+    .install-box {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      position: relative;
+      margin-top: 12px;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #333;
+      color: #ccc;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover { background: #444; }
+
+    /* ── Team Table ── */
+    .team-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .team-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e8e8e4;
+    }
+
+    .team-table td {
+      padding: 12px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0ec;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .status-dot.online { background: #c8e64a; }
+    .status-dot.offline { background: #ddd; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+          <path d="M8 12l3 3 5-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h2>Lemon</h2>
+        <span>n8n Automations</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Principal</div>
+      <a class="sidebar-link active" id="nav-dashboard" onclick="showSection('dashboard')">
+        <span class="icon">&#9638;</span> Dashboard
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Configuracion</div>
+      <a class="sidebar-link" id="nav-instalacion" onclick="showSection('instalacion')">
+        <span class="icon">&#8615;</span> Instalacion
+      </a>
+      <a class="sidebar-link" id="nav-conexiones" onclick="showSection('conexiones')">
+        <span class="icon">&#8644;</span> Conexiones
+      </a>
+      <a class="sidebar-link" id="nav-equipo" onclick="showSection('equipo')">
+        <span class="icon">&#9775;</span> Equipo
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      Actualizado: <span id="last-update">--:--</span>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- ════════ DASHBOARD ════════ -->
+    <div class="section active" id="section-dashboard">
+      <div class="header">
+        <div>
+          <h1>Dashboard</h1>
+          <div class="subtitle">n8n Lemon — Automations Hub</div>
+        </div>
+        <button class="btn-actualizar" onclick="actualizar()">
+          <span class="spinner"></span>
+          <span class="refresh-icon">&#8635;</span>
+          Actualizar
+        </button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="label">Integraciones</div>
+          <div class="value">6</div>
+          <div class="detail">Servicios disponibles</div>
+          <div class="bar bar-green" style="width: 100%"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Equipo</div>
+          <div class="value" id="kpi-equipo">0</div>
+          <div class="detail">Personas instalaron</div>
+          <div class="bar bar-blue" style="width: 60%"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Modo</div>
+          <div class="value" style="font-size:22px">Local</div>
+          <div class="detail">Cada Mac individual</div>
+          <div class="bar bar-orange" style="width: 50%"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Estado</div>
+          <div class="value" style="font-size:22px; color:#5a7a00">Activo</div>
+          <div class="detail">Sistema operativo</div>
+          <div class="bar bar-green" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title">Estado General</div>
+          <div class="status-bar">
+            <div class="segment segment-active" style="width: 50%">Instalado</div>
+            <div class="segment segment-inactive" style="width: 50%">Pendiente</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#c8e64a"></div> Instalado</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ddd"></div> Pendiente</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Integraciones Disponibles</div>
+          <ul class="integration-list">
+            <li class="integration-item">
+              <span class="integration-name">Monday.com</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+            <li class="integration-item">
+              <span class="integration-name">NetSuite</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+            <li class="integration-item">
+              <span class="integration-name">Google Sheets</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+            <li class="integration-item">
+              <span class="integration-name">Gmail</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+            <li class="integration-item">
+              <span class="integration-name">Slack</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+            <li class="integration-item">
+              <span class="integration-name">Odoo</span>
+              <div class="integration-bar"><div class="fill"></div></div>
+              <span class="integration-check">Nativo</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title">Acceso Rapido</div>
+          <div class="alert-item info">
+            <div class="alert-title">Abrir n8n</div>
+            <div class="alert-detail">http://localhost:5678 (en tu Mac)</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">Usuario</div>
+            <div class="alert-detail">admin / la contrasena que elegiste</div>
+          </div>
+          <div class="alert-item warning">
+            <div class="alert-title">Iniciar n8n</div>
+            <div class="alert-detail">Terminal: cd ~/Documents/n8n\ Lemon && ./iniciar.sh</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Pasos de Configuracion</div>
+          <div class="step">
+            <div class="step-number done">1</div>
+            <div>
+              <div class="step-label">Instalar n8n</div>
+              <div class="step-detail">Node.js + n8n global</div>
+            </div>
+            <span class="badge badge-green">Listo</span>
+          </div>
+          <div class="step">
+            <div class="step-number done">2</div>
+            <div>
+              <div class="step-label">Configurar credenciales</div>
+              <div class="step-detail">Usuario admin + clave</div>
+            </div>
+            <span class="badge badge-green">Listo</span>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div>
+              <div class="step-label">Conectar servicios</div>
+              <div class="step-detail">Monday, NetSuite, Google</div>
+            </div>
+            <span class="badge badge-orange">Pendiente</span>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div>
+              <div class="step-label">Crear workflows</div>
+              <div class="step-detail">Automatizar procesos</div>
+            </div>
+            <span class="badge badge-gray">Pendiente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ INSTALACION ════════ -->
+    <div class="section" id="section-instalacion">
+      <div class="header">
+        <div>
+          <h1>Instalacion</h1>
+          <div class="subtitle">Copia este comando y pegalo en la Terminal de tu Mac</div>
+        </div>
+        <button class="btn-actualizar" onclick="actualizar()">
+          <span class="spinner"></span>
+          <span class="refresh-icon">&#8635;</span>
+          Actualizar
+        </button>
+      </div>
+
+      <div class="card" style="max-width:800px">
+        <div class="card-title">Comando de Instalacion</div>
+        <p style="font-size:14px; color:#666; margin-bottom:12px;">
+          Abri la Terminal (Aplicaciones > Utilidades > Terminal) y pega este comando:
+        </p>
+        <div class="install-box">
+          <button class="copy-btn" onclick="copyCommand()">Copiar</button>
+          curl -fsSL https://raw.githubusercontent.com/patriciovallerino/n8n-lemon/main/instalar.sh | bash
+        </div>
+        <p style="font-size:13px; color:#999; margin-top:16px;">
+          El script instala Node.js y n8n automaticamente. Tarda 2-3 minutos.
+        </p>
+      </div>
+
+      <div class="card" style="max-width:800px; margin-top:16px">
+        <div class="card-title">Requisitos</div>
+        <div class="step">
+          <div class="step-number done">&#10003;</div>
+          <div>
+            <div class="step-label">macOS</div>
+            <div class="step-detail">Cualquier version reciente</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number done">&#10003;</div>
+          <div>
+            <div class="step-label">Conexion a internet</div>
+            <div class="step-detail">Solo durante la instalacion</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number done">&#10003;</div>
+          <div>
+            <div class="step-label">Terminal</div>
+            <div class="step-detail">Ya viene instalada en tu Mac</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ CONEXIONES ════════ -->
+    <div class="section" id="section-conexiones">
+      <div class="header">
+        <div>
+          <h1>Conexiones</h1>
+          <div class="subtitle">Servicios que se pueden integrar con n8n</div>
+        </div>
+        <button class="btn-actualizar" onclick="actualizar()">
+          <span class="spinner"></span>
+          <span class="refresh-icon">&#8635;</span>
+          Actualizar
+        </button>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title">Herramientas del Equipo</div>
+          <div class="alert-item info">
+            <div class="alert-title">Monday.com</div>
+            <div class="alert-detail">Gestion de proyectos y tareas</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">NetSuite</div>
+            <div class="alert-detail">ERP y contabilidad</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">Google Sheets / Drive</div>
+            <div class="alert-detail">Planillas y archivos</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">Gmail</div>
+            <div class="alert-detail">Emails y notificaciones</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">Slack</div>
+            <div class="alert-detail">Mensajeria del equipo</div>
+          </div>
+          <div class="alert-item info">
+            <div class="alert-title">Odoo</div>
+            <div class="alert-detail">Gestion empresarial</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Otras Integraciones</div>
+          <div class="alert-item warning">
+            <div class="alert-title">HTTP / APIs</div>
+            <div class="alert-detail">Conectar cualquier servicio con API</div>
+          </div>
+          <div class="alert-item warning">
+            <div class="alert-title">Webhooks</div>
+            <div class="alert-detail">Recibir datos de otros sistemas</div>
+          </div>
+          <div class="alert-item warning">
+            <div class="alert-title">Bases de datos</div>
+            <div class="alert-detail">PostgreSQL, MySQL, MongoDB</div>
+          </div>
+          <div class="alert-item warning">
+            <div class="alert-title">+400 integraciones</div>
+            <div class="alert-detail">Ver catalogo completo en n8n.io</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ EQUIPO ════════ -->
+    <div class="section" id="section-equipo">
+      <div class="header">
+        <div>
+          <h1>Equipo</h1>
+          <div class="subtitle">Estado de instalacion por persona</div>
+        </div>
+        <button class="btn-actualizar" onclick="actualizar()">
+          <span class="spinner"></span>
+          <span class="refresh-icon">&#8635;</span>
+          Actualizar
+        </button>
+      </div>
+
+      <div class="card" style="max-width:800px">
+        <table class="team-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Patricio Vallerino</td>
+              <td><span class="status-dot online"></span> Instalado</td>
+              <td>Mar 2026</td>
+            </tr>
+            <tr>
+              <td style="color:#999">— Agregar miembros del equipo —</td>
+              <td><span class="status-dot offline"></span> Pendiente</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      document.querySelectorAll('.sidebar-link').forEach(function(l) { l.classList.remove('active'); });
+      document.getElementById('section-' + name).classList.add('active');
+      document.getElementById('nav-' + name).classList.add('active');
+    }
+
+    function updateTime() {
+      var now = new Date();
+      var h = now.getHours().toString().padStart(2, '0');
+      var m = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('last-update').textContent = h + ':' + m;
+    }
+
+    function actualizar() {
+      var btn = document.querySelector('.btn-actualizar');
+      btn.classList.add('loading');
+      updateTime();
+      setTimeout(function() { btn.classList.remove('loading'); }, 1000);
+    }
+
+    function copyCommand() {
+      var cmd = 'curl -fsSL https://raw.githubusercontent.com/patriciovallerino/n8n-lemon/main/instalar.sh | bash';
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(cmd).then(function() {
+          var btn = document.querySelector('.copy-btn');
+          btn.textContent = 'Copiado!';
+          setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+        });
+      }
+    }
+
+    updateTime();
+  </script>
+
+</body>
+</html>
